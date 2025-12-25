@@ -9,6 +9,6 @@ import { PatientService } from './patient.service';
   ],
   controllers: [],
   providers: [PatientService],
-  exports: [PatientService],
+  exports: [PatientService, MongooseModule],
 })
 export class PatientModule {}
