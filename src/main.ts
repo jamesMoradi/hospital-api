@@ -12,11 +12,13 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
+  const port = Number(process.env.PORT) || 3000;
   const swaggerConfig = SwaggerConfig();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('/swagger', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(port, () =>
+    console.log(`app is successfully running on port ${port}`),
+  );
 }
 bootstrap();
