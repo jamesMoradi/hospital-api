@@ -51,7 +51,7 @@ export class PatientService {
     );
   }
 
-  async findByUSerId(
+  async findByUserId(
     userId: Schema.Types.ObjectId,
   ): IApiResponse<PatientDocument> {
     const patient = await this.patientModel.findOne({ userId });
@@ -95,7 +95,7 @@ export class PatientService {
       return ApiResponse.error(
         StatusCodes.NOT_FOUND,
         ReasonPhrases.NOT_FOUND,
-        'no user with this id exists',
+        'no patient with this id exists',
       );
     await this.patientModel.findByIdAndDelete(patient._id);
     return ApiResponse.success(
@@ -112,7 +112,7 @@ export class PatientService {
   ): Promise<IApiResponse<PatientDocument>> {
     const { age, contactNumber, gender, name } = updatePatientDto;
 
-    const { code, message, status } = await this.findByUSerId(userId);
+    const { code, message, status } = await this.findByUserId(userId);
     if (status !== StatusCodes.OK) {
       return ApiResponse.error(status, code, message);
     }
@@ -151,7 +151,7 @@ export class PatientService {
     specialNoteDto: UpdateSpecialNoteDto,
   ): IApiResponse<PatientDocument> {
     const { specialNote } = specialNoteDto;
-    const { code, message, status } = await this.findByUSerId(userId);
+    const { code, message, status } = await this.findByUserId(userId);
     if (status !== StatusCodes.OK) {
       return ApiResponse.error(status, code, message);
     }
