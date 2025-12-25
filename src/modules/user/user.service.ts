@@ -9,7 +9,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { Roles } from '@/common/enums/role.enum';
 import { PatientService } from '../patient/patient.service';
 import { PatientDocument } from '../patient/schema/patient.schema';
-import { DoctorServices } from '../doctor/doctor.service';
+import { DoctorService } from '../doctor/doctor.service';
 import { DoctorDocument } from '../doctor/schema/doctor.schema';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class UserService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly patientService: PatientService,
-    private readonly doctorService: DoctorServices,
+    private readonly doctorService: DoctorService,
   ) {}
 
   async findOneByEmail(email: string): IApiResponse<UserDocument> {

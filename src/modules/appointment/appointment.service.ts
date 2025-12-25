@@ -50,7 +50,7 @@ export class AppointmentService {
   async findMyAppointments(
     user: { userId: Schema.Types.ObjectId; role: string },
     paginationPayload: IPagination,
-  ): Promise<IApiResponse<AppointmentDocument[]>> {
+  ): IApiResponse<AppointmentDocument[]> {
     const { page = 1, pageSize = 10, total } = paginationPayload;
     const skip = (page - 1) * pageSize;
     const { role, userId } = user;

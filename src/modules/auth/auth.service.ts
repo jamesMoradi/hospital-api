@@ -8,20 +8,15 @@ import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
 import { Roles } from '@common/enums/role.enum';
-
-interface Req extends Request {
-  user?: {
-    email: string;
-    role: Roles;
-  };
-}
+import { REQUEST } from '@nestjs/core';
+import { Req } from '@common/request';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
   constructor(
     private userServices: UserService,
     private jwtServices: JwtService,
-    @Inject() private readonly request: Req,
+    @Inject(REQUEST) private readonly request: Req,
   ) {}
 
   private async validateUser(
@@ -65,6 +60,7 @@ export class AuthService {
     const payload = {
       email: user!.email,
       role: user!.role,
+      sub: String(user!._id),
     };
     const token = this.jwtServices.sign(payload);
 

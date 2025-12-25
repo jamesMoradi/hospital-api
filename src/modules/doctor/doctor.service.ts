@@ -8,7 +8,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 
 @Injectable()
-export class DoctorServices {
+export class DoctorService {
   constructor(
     @InjectModel(Doctor.name)
     private readonly doctorModel: Model<DoctorDocument>,
@@ -110,7 +110,7 @@ export class DoctorServices {
   async update(
     updateDoctorDto: UpdateDoctorDto,
     userId: Schema.Types.ObjectId,
-  ): Promise<IApiResponse<DoctorDocument>> {
+  ): IApiResponse<DoctorDocument> {
     const { age, contactNumber, gender, name, department } = updateDoctorDto;
 
     const { code, message, status } = await this.findByUserId(userId);
