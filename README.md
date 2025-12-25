@@ -23,7 +23,6 @@ A full-featured backend REST API for a hospital management system built using **
 - **Database**: [MongoDB Atlas](https://www.mongodb.com/)
 - **Authentication**: JWT (Passport.js)
 - **Documentation**: Swagger (OpenAPI)
-- **Deployment**: [Render](https://render.com/)
 
 ---
 
