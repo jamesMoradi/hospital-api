@@ -9,6 +9,8 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { Roles } from '@/common/enums/role.enum';
 import { PatientService } from '../patient/patient.service';
 import { PatientDocument } from '../patient/schema/patient.schema';
+import { DoctorServices } from '../doctor/doctor.service';
+import { DoctorDocument } from '../doctor/schema/doctor.schema';
 
 @Injectable()
 export class UserService {
@@ -16,6 +18,7 @@ export class UserService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly patientService: PatientService,
+    private readonly doctorService: DoctorServices,
   ) {}
 
   async findOneByEmail(email: string): IApiResponse<UserDocument> {
@@ -33,7 +36,7 @@ export class UserService {
 
   async create(
     createUserDto: CreateUserDto,
-  ): IApiResponse<UserDocument | PatientDocument> {
+  ): IApiResponse<UserDocument | PatientDocument | DoctorDocument> {
     const {
       age,
       contactNumber,
@@ -76,6 +79,15 @@ export class UserService {
       if (newPatient.status !== StatusCodes.CREATED) {
         return newPatient;
       }
+    } else if (role === Roles.DOCTOR) {
+      const newDoctor = await this.doctorService.create(
+        { age, contactNumber, department, gender, name },
+        newUser._id,
+      );
+
+      if (newDoctor.status !== StatusCodes.CREATED) {
+        return newDoctor;
+      }
     }
 
     return ApiResponse.success(
@@ -86,7 +98,9 @@ export class UserService {
     );
   }
 
-  async removeById(id: ObjectId): IApiResponse<UserDocument> {
+  async removeById(
+    id: ObjectId,
+  ): IApiResponse<DoctorDocument | PatientDocument> {
     const user = await this.userModel.findById(id);
     if (!user)
       return ApiResponse.error(
@@ -95,12 +109,12 @@ export class UserService {
         'no user exists',
       );
 
-    await this.userModel.deleteOne(user._id);
-    return ApiResponse.success(
-      StatusCodes.OK,
-      ReasonPhrases.OK,
-      'user deleted successfully ',
-      user,
-    );
+    if (user.role === Roles.PATIENT) {
+      const patient = await this.patientService.remove(user._id);
+      return patient;
+    }
+
+    const doctor = await this.doctorService.remove(user._id);
+    return doctor;
   }
 }

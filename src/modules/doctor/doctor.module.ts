@@ -9,6 +9,6 @@ import { DoctorServices } from './doctor.service';
   ],
   controllers: [],
   providers: [DoctorServices],
-  exports: [],
+  exports: [DoctorServices],
 })
 export class DoctorModule {}
