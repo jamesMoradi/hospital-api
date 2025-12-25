@@ -1,3 +1,4 @@
+import { GenderEnum } from '@/common/enums/gender.enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { Roles } from 'src/common/enums/role.enum';
@@ -18,6 +19,9 @@ export class User {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ required: true, enum: Roles })
+  gender: GenderEnum;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
