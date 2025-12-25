@@ -9,12 +9,19 @@ import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
 import { Roles } from '@common/enums/role.enum';
 
+interface Req extends Request {
+  user?: {
+    email: string;
+    role: Roles;
+  };
+}
+
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
   constructor(
     private userServices: UserService,
     private jwtServices: JwtService,
-    @Inject() private readonly request: Request,
+    @Inject() private readonly request: Req,
   ) {}
 
   private async validateUser(
@@ -55,14 +62,15 @@ export class AuthService {
       return ApiResponse.error(status, code, message);
     }
 
-    const token = this.jwtServices.sign({
-      email: user?.email,
-      sub: user?._id,
-      role: user?.role,
-    });
+    const payload = {
+      email: user!.email,
+      role: user!.role,
+    };
+    const token = this.jwtServices.sign(payload);
 
     const prefix = user?.role === Roles.DOCTOR ? 'dr' : '';
 
+    this.request.user = payload;
     return ApiResponse.success(
       StatusCodes.ACCEPTED,
       ReasonPhrases.ACCEPTED,
