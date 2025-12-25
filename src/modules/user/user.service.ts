@@ -1,59 +1,92 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { ApiResponse, IApiResponse, Roles } from '@/common';
-import { User, UserDocument, UserModel } from './schema/user.schema';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from './schema/user.schema';
+import { Model, ObjectId } from 'mongoose';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ApiResponse, IApiResponse } from '@/common//response';
 import * as bcryptjs from 'bcryptjs';
-import { ObjectId } from 'mongoose';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { Roles } from '@/common/enums/role.enum';
+import { PatientService } from '../patient/patient.service';
+import { PatientDocument } from '../patient/schema/patient.schema';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: UserModel) {}
+  constructor(
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+    private readonly patientService: PatientService,
+  ) {}
 
-  async findByEmailId(email: string): IApiResponse<UserDocument> {
+  async findOneByEmail(email: string): IApiResponse<UserDocument> {
     const user = await this.userModel.findOne({ email });
-
     if (!user) {
       return ApiResponse.error(
         StatusCodes.NOT_FOUND,
         ReasonPhrases.NOT_FOUND,
-        'No user with this email exists',
+        'no user with this email exists',
       );
     }
 
     return ApiResponse.success(StatusCodes.OK, ReasonPhrases.OK, '', user);
   }
 
-  async create(createUSerDto: CreateUserDto): IApiResponse<UserDocument> {
-    const { email, gender, name, password, role } = createUSerDto;
-    const isUserEXists = await this.userModel.findOne({ email });
+  async create(
+    createUserDto: CreateUserDto,
+  ): IApiResponse<UserDocument | PatientDocument> {
+    const {
+      age,
+      contactNumber,
+      department,
+      email,
+      gender,
+      name,
+      password,
+      role,
+    } = createUserDto;
 
-    if (isUserEXists)
+    const user = await this.findOneByEmail(email);
+    if (user.status === StatusCodes.OK) {
       return ApiResponse.error(
         StatusCodes.BAD_REQUEST,
         ReasonPhrases.BAD_REQUEST,
         'user with this email already exists',
       );
+    }
 
     const hashedPassword = await bcryptjs.hash(password, 10);
-    const user: UserDocument = await this.userModel.create({
-      password: hashedPassword,
+    const newUser = await this.userModel.create({
       name,
       email,
-      gender,
       role,
+      password: hashedPassword,
     });
 
-    // if (user.role === Roles.PATIENT) {
-    // } else if (user.role === Roles.DOCTOR) {
-    //   pass
-    // }
+    if (role === Roles.PATIENT) {
+      const newPatient = await this.patientService.create(
+        {
+          name,
+          age,
+          gender,
+          contactNumber,
+        },
+        newUser._id,
+      );
 
-    return ApiResponse.success(StatusCodes.OK, ReasonPhrases.OK, '', user);
+      if (newPatient.status !== StatusCodes.CREATED) {
+        return newPatient;
+      }
+    }
+
+    return ApiResponse.success(
+      StatusCodes.CREATED,
+      ReasonPhrases.CREATED,
+      '',
+      newUser,
+    );
   }
 
-  async remove(id: ObjectId): IApiResponse<UserDocument> {
+  async removeById(id: ObjectId): IApiResponse<UserDocument> {
     const user = await this.userModel.findById(id);
     if (!user)
       return ApiResponse.error(
@@ -62,6 +95,12 @@ export class UserService {
         'no user exists',
       );
 
-    return ApiResponse.success(StatusCodes.OK, ReasonPhrases.OK, '', user);
+    await this.userModel.deleteOne(user._id);
+    return ApiResponse.success(
+      StatusCodes.OK,
+      ReasonPhrases.OK,
+      'user deleted successfully ',
+      user,
+    );
   }
 }

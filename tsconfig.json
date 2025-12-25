@@ -23,7 +23,8 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-    "useDefineForClassFields": false
-  }
+    "noFallthroughCasesInSwitch": false
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["src/**/*.ts"]
 }

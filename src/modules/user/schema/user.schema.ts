@@ -1,14 +1,13 @@
-import { GenderEnum } from '@/common/enums/gender.enum';
+import { Roles } from '@/common/enums/role.enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
-import { Roles } from 'src/common/enums/role.enum';
+import { ObjectId } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class User {
   @Prop()
   name: string;
 
-  @Prop({ required: true, unique: true, lowercase: true })
+  @Prop({ required: true, unique: [true, 'mailID already exist'] })
   email: string;
 
   @Prop({ required: true })
@@ -16,15 +15,7 @@ export class User {
 
   @Prop({ required: true, enum: Roles })
   role: Roles;
-
-  @Prop({ default: true })
-  isActive: boolean;
-
-  @Prop({ required: true, enum: Roles })
-  gender: GenderEnum;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-export type UserDocument = HydratedDocument<User>;
-export type UserModel = Model<UserDocument>;
+export type UserDocument = User & Document & { _id: ObjectId };
